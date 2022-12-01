@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# This script is intented to be symlinked as the name of the git hook we want to "supplant".
+# e.g. `ln -s ./.githooks/group-scripts-into-git-hook ./.githooks/pre-commit`
+
+# It looks for scripts in the `.githooks/pre-commit.githooks` directory and executes them in order,
+# passing along stdin. If any script exits with a non-zero status, this script fails as well.
+
+scripts_dir=$(dirname "$0")
+hook_name=$(basename "$0")
+hook_dir="$scripts_dir/$hook_name.hooks"
+
+if [[ -d $hook_dir ]]; then
+  stdin=$(cat /dev/stdin)
+
+  for script_name in "$hook_dir"/*; do
+    [ -f "$script_name" ] || continue # Skip empty folder (if the file found is `*`)
+
+    echo -e "⚙️. \033[1;34m${bold}Executing '$(basename $script_name)' for hook '$hook_name'\033[0m"
+    echo "$stdin" | $script_name "$@"
+
+    exit_code=$?
+
+    if [ $exit_code != 0 ]; then
+      echo -e "❌ \033[1;31m'$(basename $script_name)' exited with code $exit_code, aborting\033[0m"
+      exit $exit_code
+    else
+      echo -e "✅ \033[1;32m'$(basename $script_name)' succeeded\033[0m"
+    fi
+  done
+fi
+
+exit 0
