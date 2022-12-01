@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# This hook will prefix commit messages with Jira Issue number to enable automatic smart commits.
+
+# 1. Enter a commit message, with `git commit -m "Add cool stuff"` or `git commit` and editor usage.
+# 2. The hook reads the branch name `user/PLAT-1234-foo-bar` to extract the Jira Issue `PLAT-1234`
+# 3. The final commit message will be `PLAT-1234 Add cool stuff`
+# 4. If the Jira issue can't be extracted from branch name, nothing will be done
+# 5. If the jira issue ref is already present in commit message, it won't be added again (i.e. with git commit --amend)
+
+FILE=$1 # File holding the commit message
+MESSAGE=$(cat "$FILE") # Get the message written by developer
+JIRA_REF=$(git branch --show-current | grep -Eo '^(\w+/)?(\w+[-_])?[0-9]+' | grep -Eo '(\w+[-])?[0-9]+' | tr "[:lower:]" "[:upper:]")
+
+if [[ "$JIRA_REF" == "" || "$MESSAGE" == "$JIRA_REF"* ]];then
+  exit 0;
+fi
+
+echo "$JIRA_REF $MESSAGE" > "$FILE"
