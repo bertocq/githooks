@@ -16,7 +16,7 @@ if [[ -d $hook_dir ]]; then
   for script_name in "$hook_dir"/*; do
     [ -f "$script_name" ] || continue # Skip empty folder (if the file found is `*`)
 
-    echo -e "⚙️. \033[1;34m${bold}Executing '$(basename $script_name)' for hook '$hook_name'\033[0m"
+    echo -e "⚙️ \033[1;34m${bold}Executing '$(basename $script_name)' for hook '$hook_name'\033[0m"
     echo "$stdin" | $script_name "$@"
 
     exit_code=$?
